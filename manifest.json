@@ -1,7 +1,7 @@
 {
-    "name": "My Extension",
-    "description": "My Extension",
-    "version": "1.0",
+    "name": "Task Timer",
+    "description": "Logging time to spend for each task you have easily. (Bata version)",
+    "version": "0.1",
     "manifest_version": 3,
     "background": {
       "service_worker": "background.js",
