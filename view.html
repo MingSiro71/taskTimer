@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="min-width: 200px">
+    <main>
+
+    </main>
+
+    <hr>
+
+    <section>
+        <div class="controller">
+            <button type="button" class="button break">BREAK</button>
+            <button type="button" class="button export">EXPORT</button>
+        </div>
+    </section>
+
+    <section>
+        <button type="button" class="button new-task">+</button>
+        <div id="modal" class="modal hidden">
+            <h1>タスクの追加</h1>
+            <form>
+                <input type="text">
+            </form>
+            <button class="button cancel-button">キャンセル</button>
+            <button class="button confirm-button">OK</button>
+        </div>
+    </section>
+
+    <div class="modal">
+
+    </div>
+
+    <!-- <section>
+        <button type="button" class="button new-task">-</button>
+        <div id="modal" class="modal hidden">
+            <h1>タスクの削除</h1>
+            <form>
+                <input type="text">
+            </form>
+            <button class="button cancel-button">キャンセル</button>
+            <button class="button confirm-button">OK</button>
+        </div>
+    </section> -->
+
+    <script src="view.js"></script>
+</body>
+
+</html>
