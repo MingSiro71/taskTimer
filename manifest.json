@@ -1,6 +1,6 @@
 {
     "name": "Task Timer",
-    "description": "Logging time to spend for each task you have easily. (Bata version)",
+    "description": "Logging time to spend for each of your task easily. (Bata version)",
     "version": "0.1",
     "manifest_version": 3,
     "background": {
