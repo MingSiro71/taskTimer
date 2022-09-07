@@ -119,7 +119,11 @@ class TaskView {
             requestType: 'getLastTimeLog',
             data: { taskName: this.taskName }
         }).then((data) => {
-            this.renderLoggingTime(data.start, data.finish);
+            if (!data) {
+                this.renderLoggingTime();
+            } else {
+                this.renderLoggingTime(data.start, data.finish);
+            }
         })
     }
     renderDaily(dailyTotal) {
@@ -142,8 +146,58 @@ class TaskView {
 // taskView stack
 const taskViews = {};
 
+class ModalView {
+    constructor(text, onConfirm) {
+        const element = document.createElement('div');
+        element.classList.add('modal');
+        const innerHtml = `<h1>${text}</h1>
+            <form>
+                <input type="text" style="margin: 1rem 0;">
+            </form>
+            <button class="button cancel-button">キャンセル</button>
+            <button class="button confirm-button">OK</button>
+        </div>`;
+        element.insertAdjacentHTML('beforeend', innerHtml);
+
+        const confirmButton = element.querySelector('.confirm-button');
+        const cancelButton = element.querySelector('.cancel-button');
+        const input = element.querySelector('input');
+
+        // html whole element
+        this.element = element;
+        // confirm button element
+        this.confirmButton = confirmButton;
+        // cancel button element
+        this.cancelButton = cancelButton;
+        // input element
+        this.input = input;
+        // handler listen confirm button click
+        this.onConfirm = onConfirm;
+
+        this.cancelButton.addEventListener('click', (_) => {
+            this.clear();
+        });
+
+        this.confirmButton.addEventListener('click', (_) => {
+            this.onConfirm(this.input.value);
+            this.clear();
+        });
+    }
+    clear() {
+        const emptyModal = document.createElement('div');
+        emptyModal.classList.add('modal');
+        emptyModal.classList.add('hidden');
+        this.element.replaceWith(emptyModal);
+    }
+    emerge() {
+        const currentModal = document.querySelector('.modal');
+        currentModal.replaceWith(this.element);
+        this.input.focus();
+    }
+}
+
 class TimeView {
-    constructor(timestamp) {
+    constructor(timestamp = new Date().setHours(0, 0, 0, 0)) {
         // time as spend time
         this.totalHour = Math.floor(timestamp / (1000 * 60 * 60));
         this.totalMinute = Math.floor(timestamp / (1000 * 60));
@@ -157,16 +211,6 @@ class TimeView {
     format2Degit(number) {
         return ('00' + number).slice(-2);
     }
-}
-
-const timestampToDateString = (timestamp) => {
-    const dateObject = new Date(timestamp);
-    return `${format2Degit(dateObject.getHours())}:${format2Degit(dateObject.getMinutes())}`;
-}
-
-const onDomLoad = (task) => {
-    const taskName = task.querySelector('.task-label').innerText;
-    initializeTotal(taskName);
 }
 
 const setup = () => {
@@ -196,23 +240,13 @@ const setup = () => {
 };
 
 const reset = () => {
-
     Object.keys(taskViews).map((taskName) => {
-        taskViews[taskName] = undefined;
+        delete taskViews[taskName];
     });
     const main = document.body.querySelector('main');
     main.innerHTML = null;
     setup();
 }
-
-const storeTask = (taskName) => {
-    chrome.runtime.sendMessage({
-        requestType: 'addTask',
-        data: { taskName: taskName }
-    }).then((_) => {
-        reset();
-    });
-};
 
 const breakButton = document.querySelector('.break');
 breakButton.addEventListener('click', (_) => {
@@ -236,7 +270,7 @@ exportButton.addEventListener('click', (_) => {
                 const passed = new TimeView(log.finish - log.start).totalTime;
                 return [taskName, start, finish, passed];
             }).join('\n');
-            const file = new Blob([csv], {type: 'text/csv'})
+            const file = new Blob([csv], { type: 'text/csv' })
             const url = (window.URL).createObjectURL(file);
             const link = document.createElement('a');
             link.href = url;
@@ -246,23 +280,42 @@ exportButton.addEventListener('click', (_) => {
         });
 });
 
-const model = document.getElementById('modal');
+const modalViews = {
+    newTask: new ModalView(
+        'タスクを追加',
+        (inputValue) => {
+            if (!inputValue) {
+                return;
+            }
+            chrome.runtime.sendMessage({
+                requestType: 'addTask',
+                data: { taskName: inputValue }
+            }).then((_) => {
+                reset();
+            });
+        }
+    ),
+    deleteTask: new ModalView(
+        'タスクを削除',
+        (inputValue) => {
+            chrome.runtime.sendMessage({
+                requestType: 'deleteTask',
+                data: { taskName: inputValue }
+            }).then((_) => {
+                reset();
+            });
+        }
+    )
+};
+
 const newTaskButton = document.querySelector('.new-task');
-const confirmButton = model.querySelector('.confirm-button');
-const cancelButton = model.querySelector('.cancel-button');
-const input = model.querySelector('input');
-confirmButton.addEventListener('click', (_) => {
-    const taskName = input.value;
-    storeTask(taskName);
-    modal.classList.add('hidden');
-});
-
-cancelButton.addEventListener('click', () => {
-    model.classList.add('hidden');
-});
-
 newTaskButton.addEventListener('click', (_) => {
-    model.classList.remove('hidden');
+    modalViews.newTask.emerge();
+});
+
+const deleteTaskButton = document.querySelector('.delete-task');
+deleteTaskButton.addEventListener('click', (_) => {
+    modalViews.deleteTask.emerge();
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {

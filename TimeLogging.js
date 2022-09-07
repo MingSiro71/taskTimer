@@ -78,10 +78,10 @@ export default class TimeLogging {
     async getLastTimeLog(taskName) {
         const db = await this.indexedDB.connect();
         const timeLogs = await this.indexedDB.getAll(db, this.table, taskName, 'taskName');
-        const last = timeLogs.reduce((latest, timeLog) => {
-            return latest.start < timeLog.start ? timeLog : latest;
-        })
         db.close();
+        const last = timeLogs.length !== 0 ? timeLogs.reduce((latest, timeLog) => {
+            return latest.start < timeLog.start ? timeLog : latest;
+        }) : null;
         return last;
     }
     async getDailyTotal(taskName) {

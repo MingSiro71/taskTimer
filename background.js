@@ -32,6 +32,13 @@ const addTask = async (data) => {
     return result;
 }
 
+const deleteTask = async (data) => {
+    const db = await indexedDB.connect();
+    const result = await indexedDB.delete(db, 'tasks', data.taskName);
+    db.close();
+    return result;
+}
+
 const isLogging = async (data) => {
     return timeLogging.isLogging(data.taskName);
 }
@@ -79,6 +86,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             break;
         case 'addTask':
             addTask(message.data).then(sendResponse);
+            break;
+        case 'deleteTask':
+            deleteTask(message.data).then(sendResponse);
             break;
         case 'isLogging':
             isLogging(message.data).then(sendResponse);

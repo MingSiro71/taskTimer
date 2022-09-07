@@ -21,38 +21,47 @@ export default class IndexedDB {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([table], 'readonly');
             const objectStore = transaction.objectStore(table);
-            const query = objectStore.get(key);
-            query.onsuccess = () => resolve(query.result);
-            query.onerror = () => reject(this.getError());
+            const request = objectStore.get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(this.getError());
         });
     }
     getAll(db, table, condition = null, index = null) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([table], 'readonly');
             const objectStore = transaction.objectStore(table);
-            const query = index ? objectStore.index(index).getAll(condition) : objectStore.getAll(condition);
-            query.onsuccess = () => {
-                resolve(query.result);
+            const request = index ? objectStore.index(index).getAll(condition) : objectStore.getAll(condition);
+            request.onsuccess = () => {
+                resolve(request.result);
             }
-            query.onerror = () => reject(this.getError());
+            request.onerror = () => reject(this.getError());
         });
     }
     create(db, table, data) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([table], 'readwrite');
             const objectStore = transaction.objectStore(table);
-            const create = objectStore.add(data);
-            create.onsuccess = () => resolve(true);
-            create.onerror = () => reject(this.getError());
+            const request = objectStore.add(data);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(this.getError());
         });
     }
     update(db, table, data) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([table], 'readwrite');
             const objectStore = transaction.objectStore(table);
-            const update = objectStore.put(data);
-            update.onsuccess = () => resolve(true);
-            update.onerror = () => reject(this.getError());
+            const request = objectStore.put(data);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(this.getError());
+        });
+    }
+    delete(db, table, key) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([table], 'readwrite');
+            const objectStore = transaction.objectStore(table);
+            const request = objectStore.delete(key);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(this.getError());
         });
     }
 }
